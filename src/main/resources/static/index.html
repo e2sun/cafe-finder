@@ -26,6 +26,7 @@
         <script>
             // Create map and set initial view (NYC)
             const map = L.map('map').setView([40.73061, -73.935242], 13);
+            const cafeMarkers = L.layerGroup().addTo(map);
             // Add OpenStreetMap tile layer
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 maxZoom: 19,
@@ -53,6 +54,12 @@
                     const res = await fetch(url);
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const cafes = await res.json();
+                    cafeMarkers.clearLayers();
+                    cafes.forEach(cafe => {
+                        L.marker([cafe.lat, cafe.lon])
+                            .addTo(cafeMarkers)
+                            .bindPopup(cafe.name)
+                    });
                     document.getElementById("out").textContent = `Found ${cafes.length} cafes`;
                 } catch (e) {
                     console.log("Fetch failed: ", e);
