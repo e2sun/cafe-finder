@@ -3,8 +3,64 @@
 <head>
     <meta charset="UTF-8">
     <title>Cafe Finder ☕️</title>
+
+    <!-- Leaflet -->
+    <link rel = "stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+    <style>
+        body { margin:0; font-family: -apple-system, system-ui, Arial;}
+        #topbar {padding: 10px; border-bottom: 1px solid #eee; display:flex; gap: 10px; align-items: center;}
+        #out {color:#444;}
+        #map { height: calc(100vh - 52px); width: 100vw; }
+    </style>
 </head>
 <body>
+
+    <div id="topbar">
+        <button id="findCafeBtn"> Find cafes </button>
+        <div id="out"></div>
+    </div>
+
+    <div id="map">
+        <script>
+            // Create map and set initial view (NYC)
+            const map = L.map('map').setView([40.73061, -73.935242], 13);
+            // Add OpenStreetMap tile layer
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                maxZoom: 19,
+                attribution: '&copy; OpenStreetMap contributors'
+            }).addTo(map);
+
+            // Marker Test
+            L.marker([40.73061, -73.935242]).addTo(map)
+                .bindPopup('Hello from Cafe Finder ☕️')
+                .openPopup();
+
+            // Show existing cafes nearby
+            document.getElementById("findCafeBtn").onclick = async() => {
+                const b = map.getBounds();
+                const sw = b.getSouthWest();
+                const ne = b.getNorthEast();
+
+                const url = `/api/cafes?swLat=${sw.lat}&swLng=${sw.lng}&neLat=${ne.lat}&neLng=${ne.lng}&limit=50`;
+
+                document.getElementById("out").textContent = url;
+                console.log("Cafe request: ", url);
+
+                // try fetch
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const cafes = await res.json();
+                    document.getElementById("out").textContent = `Found ${cafes.length} cafes`;
+                } catch (e) {
+                    console.log("Fetch failed: ", e);
+                }
+            };
+        </script>
+    </div>
+
 
 </body>
 </html>
